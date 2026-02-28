@@ -23,11 +23,11 @@
 
   embeddedSandboxShell ? stdenv.hostPlatform.isStatic && !stdenv.hostPlatform.isDarwin,
 
-  withAWS ?
+  withAWS ? false,
     # Default is this way because there have been issues building this dependency
-    stdenv.hostPlatform == stdenv.buildPlatform && (stdenv.isLinux || stdenv.isDarwin),
+    # stdenv.hostPlatform == stdenv.buildPlatform && (stdenv.isLinux || stdenv.isDarwin),
 
-  enableWasm ? !stdenv.hostPlatform.isStatic,
+  enableWasm ? false, # !stdenv.hostPlatform.isStatic,
 }:
 
 let

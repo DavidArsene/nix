@@ -19,7 +19,7 @@
   version,
 
   # Whether to enable Markdown rendering in the Nix binary.
-  enableMarkdown ? !stdenv.hostPlatform.isWindows,
+  enableMarkdown ? false, # !stdenv.hostPlatform.isWindows,
 
   # Which interactive line editor library to use for Nix's repl.
   #
