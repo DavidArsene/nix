@@ -969,7 +969,7 @@ static void performOp(
         WorkerProto::write(*store, wconn, missing.willBuild);
         WorkerProto::write(*store, wconn, missing.willSubstitute);
         WorkerProto::write(*store, wconn, missing.unknown);
-        conn.to << missing.downloadSize << missing.narSize;
+        conn.to << missing.totalDownloadSize << missing.totalNarSize;
         break;
     }
 

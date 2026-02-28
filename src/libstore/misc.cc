@@ -291,9 +291,10 @@ MissingPaths Store::queryMissing(const std::vector<DerivedPath> & targets)
 
                     {
                         auto state(state_.lock());
-                        state->res.willSubstitute.insert(bo.path);
-                        state->res.downloadSize += info->second.downloadSize;
-                        state->res.narSize += info->second.narSize;
+                        state->res.willSubstitute.insert(
+                            SubstitutablePath{bo.path, info->second.downloadSize, info->second.narSize});
+                        state->res.totalDownloadSize += info->second.downloadSize;
+                        state->res.totalNarSize += info->second.narSize;
                     }
 
                     for (auto & ref : info->second.references)

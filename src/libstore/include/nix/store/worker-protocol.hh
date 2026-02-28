@@ -7,8 +7,9 @@
 
 namespace nix {
 
-#define WORKER_MAGIC_1 0x6e697863
-#define WORKER_MAGIC_2 0x6478696f
+// NOTE: changed to uppercase as a lazy way to prevent communication with upstream `nix-daemon`s
+#define WORKER_MAGIC_1 0x4e495843 // "NIXC"
+#define WORKER_MAGIC_2 0x4458494f // "DXIO"
 
 /* Note: you generally shouldn't change the protocol version. Define a
    new `WorkerProto::Feature` instead. */
@@ -17,14 +18,14 @@ namespace nix {
 #define GET_PROTOCOL_MAJOR(x) ((x) & 0xff00)
 #define GET_PROTOCOL_MINOR(x) ((x) & 0x00ff)
 
-#define STDERR_NEXT 0x6f6c6d67
-#define STDERR_READ 0x64617461  // data needed from source
-#define STDERR_WRITE 0x64617416 // data for sink
-#define STDERR_LAST 0x616c7473
-#define STDERR_ERROR 0x63787470
-#define STDERR_START_ACTIVITY 0x53545254
-#define STDERR_STOP_ACTIVITY 0x53544f50
-#define STDERR_RESULT 0x52534c54
+#define STDERR_NEXT 0x6f6c6d67           // "olmg" - LE for "logm"
+#define STDERR_READ 0x64617461           // "data"
+#define STDERR_WRITE 0x64617416          // "dat"
+#define STDERR_LAST 0x616c7473           // "alts" - LE for "last"
+#define STDERR_ERROR 0x63787470          // "cxtp" - LE for "xcpt"
+#define STDERR_START_ACTIVITY 0x53545254 // "STRT"
+#define STDERR_STOP_ACTIVITY 0x53544f50  // "STOP"
+#define STDERR_RESULT 0x52534c54         // "RSLT"
 
 struct StoreDirConfig;
 struct Source;

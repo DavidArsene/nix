@@ -54,6 +54,9 @@ void printMissing(ref<Store> store, const std::vector<DerivedPath> & paths, Verb
 
 void printMissing(ref<Store> store, const MissingPaths & missing, Verbosity lvl)
 {
+    // Forcefully show missing paths
+    lvl = lvlWarn;
+
     if (!missing.willBuild.empty()) {
         if (missing.willBuild.size() == 1)
             printMsg(lvl, "this derivation will be built:");
@@ -66,33 +69,27 @@ void printMissing(ref<Store> store, const MissingPaths & missing, Verbosity lvl)
     }
 
     if (!missing.willSubstitute.empty()) {
-        if (missing.willSubstitute.size() == 1) {
-            printMsg(
-                lvl,
-                "this path will be fetched (%s download, %s unpacked):",
-                renderSize(missing.downloadSize),
-                renderSize(missing.narSize));
-        } else {
-            printMsg(
-                lvl,
-                "these %d paths will be fetched (%s download, %s unpacked):",
-                missing.willSubstitute.size(),
-                renderSize(missing.downloadSize),
-                renderSize(missing.narSize));
-        }
-        std::vector<const StorePath *> willSubstituteSorted = {};
-        std::for_each(missing.willSubstitute.begin(), missing.willSubstitute.end(), [&](const StorePath & p) {
-            willSubstituteSorted.push_back(&p);
-        });
-        std::sort(
-            willSubstituteSorted.begin(), willSubstituteSorted.end(), [](const StorePath * lhs, const StorePath * rhs) {
-                if (lhs->name() == rhs->name())
-                    return lhs->to_string() < rhs->to_string();
-                else
-                    return lhs->name() < rhs->name();
-            });
+        std::vector<const SubstitutablePath *> willSubstituteSorted = {};
+        std::ranges::for_each(missing.willSubstitute, [&](const auto & p) { willSubstituteSorted.push_back(&p); });
+        std::ranges::sort(
+            willSubstituteSorted, [](const auto * lhs, const auto * rhs) { return lhs->narSize < rhs->narSize; });
+
         for (auto p : willSubstituteSorted)
-            printMsg(lvl, "  %s", store->printStorePath(*p));
+            // longest renderSize is "####.# ?iB" = 10
+            // so for the second one it's 10 + strlen(" disk, ") = 17
+            printMsg(
+                lvl,
+                "(%s disk,%17t%10s download) %s",
+                renderSize(p->narSize),
+                renderSize(p->downloadSize),
+                p->path.to_string());
+
+        printMsg(
+            lvl,
+            "%d paths will be substituted, downloading %s for a total of %s disk space.",
+            missing.willSubstitute.size(),
+            renderSize(missing.totalDownloadSize),
+            renderSize(missing.totalNarSize));
     }
 
     if (!missing.unknown.empty()) {

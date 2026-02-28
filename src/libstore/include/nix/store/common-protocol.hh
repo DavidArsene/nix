@@ -10,6 +10,7 @@ struct Source;
 
 // items being serialized
 class StorePath;
+struct SubstitutablePath;
 struct ContentAddress;
 struct DrvOutput;
 struct Realisation;
@@ -68,6 +69,8 @@ template<>
 DECLARE_COMMON_SERIALISER(std::string);
 template<>
 DECLARE_COMMON_SERIALISER(StorePath);
+template<>
+DECLARE_COMMON_SERIALISER(SubstitutablePath);
 template<>
 DECLARE_COMMON_SERIALISER(ContentAddress);
 template<>

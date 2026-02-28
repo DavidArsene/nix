@@ -101,4 +101,19 @@ void CommonProto::Serialise<std::optional<ContentAddress>>::write(
     conn.to << (caOpt ? renderContentAddress(*caOpt) : "");
 }
 
+SubstitutablePath
+CommonProto::Serialise<SubstitutablePath>::read(const StoreDirConfig & store, CommonProto::ReadConn conn)
+{
+    return SubstitutablePath{
+        .path = store.parseStorePath(readString(conn.from)),
+        .downloadSize = readNum<uint64_t>(conn.from),
+        .narSize = readNum<uint64_t>(conn.from)};
+}
+
+void CommonProto::Serialise<SubstitutablePath>::write(
+    const StoreDirConfig & store, CommonProto::WriteConn conn, const SubstitutablePath & gsp)
+{
+    conn.to << store.printStorePath(gsp.path) << gsp.downloadSize << gsp.narSize;
+}
+
 } // namespace nix

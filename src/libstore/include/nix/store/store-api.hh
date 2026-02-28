@@ -60,6 +60,18 @@ struct KeyedBuildResult;
 
 typedef std::map<StorePath, std::optional<ContentAddress>> StorePathCAMap;
 
+struct SubstitutablePath
+{
+    StorePath path;
+    uint64_t downloadSize;
+    uint64_t narSize;
+
+    bool operator==(const SubstitutablePath &) const = default;
+    auto operator<=>(const SubstitutablePath &) const = default;
+};
+
+typedef std::set<SubstitutablePath> StorePathSizeSet;
+
 /**
  * Information about what paths will be built or substituted, returned
  * by Store::queryMissing().
@@ -67,10 +79,10 @@ typedef std::map<StorePath, std::optional<ContentAddress>> StorePathCAMap;
 struct MissingPaths
 {
     StorePathSet willBuild;
-    StorePathSet willSubstitute;
+    StorePathSizeSet willSubstitute;
     StorePathSet unknown;
-    uint64_t downloadSize{0};
-    uint64_t narSize{0};
+    uint64_t totalDownloadSize{0};
+    uint64_t totalNarSize{0};
 };
 
 /**
