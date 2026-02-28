@@ -18,14 +18,15 @@
   cmake, # for resolving aws-crt-cpp dep
   wasmtime,
 
-  busybox-sandbox-shell ? null,
+  busybox,
+  busybox-sandbox-shell ? busybox,
   pkgsStatic,
 
   # Configuration Options
 
   version,
 
-  embeddedSandboxShell ? stdenv.hostPlatform.isStatic && !stdenv.hostPlatform.isDarwin,
+  embeddedSandboxShell ? true || stdenv.hostPlatform.isStatic && !stdenv.hostPlatform.isDarwin,
 
   withSandboxShell ? stdenv.hostPlatform.isLinux || stdenv.hostPlatform.isFreeBSD,
   sandboxShell ?
@@ -36,11 +37,11 @@
     else
       null,
 
-  withAWS ?
+  withAWS ? false &&
     # Default is this way because there have been issues building this dependency
     (lib.meta.availableOn stdenv.hostPlatform aws-c-common) && !stdenv.hostPlatform.isStatic,
 
-  enableWasm ? !stdenv.hostPlatform.isStatic,
+  enableWasm ? false && !stdenv.hostPlatform.isStatic,
 }:
 
 let

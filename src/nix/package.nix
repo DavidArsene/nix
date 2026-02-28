@@ -39,12 +39,12 @@
 
   # Whether to embed the public C API into the `nix` executable so plugins can
   # resolve those symbols without linking Nix libraries directly.
-  withPluginCApi ? !stdenv.hostPlatform.isWindows && !stdenv.hostPlatform.isStatic,
+  withPluginCApi ? false && !stdenv.hostPlatform.isWindows && !stdenv.hostPlatform.isStatic,
 }:
 
 let
   inherit (lib) fileset;
-  enableSentry = !stdenv.hostPlatform.isStatic;
+  enableSentry = false;
 in
 
 mkMesonExecutable (finalAttrs: {

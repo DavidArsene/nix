@@ -3,21 +3,10 @@
 
   inputs.nixpkgs.url = "https://flakehub.com/f/NixOS/nixpkgs/0.2605";
 
-  inputs.nixpkgs-regression.url = "github:NixOS/nixpkgs/215d4d0fd80ca5163643b03a33fde804a29cc1e2";
-  inputs.nixpkgs-23-11.url = "github:NixOS/nixpkgs/a62e6edd6d5e1fa0329b8653c801147986f8d446";
-
-  # dev tooling
-  inputs.flake-parts.url = "https://flakehub.com/f/hercules-ci/flake-parts/0.1";
-  inputs.git-hooks-nix.url = "https://flakehub.com/f/cachix/git-hooks.nix/0.1.941";
-  # work around https://github.com/NixOS/nix/issues/7730
-  inputs.flake-parts.inputs.nixpkgs-lib.follows = "nixpkgs";
-  inputs.git-hooks-nix.inputs.nixpkgs.follows = "nixpkgs";
-
   outputs =
     inputs@{
       self,
       nixpkgs,
-      nixpkgs-regression,
       ...
     }:
 
@@ -282,7 +271,7 @@
       overlays.internal = overlayFor (p: p.stdenv);
 
       /**
-        A Nixpkgs overlay that sets `nix` to something like `packages.<system>.nix-everything`,
+        A Nixpkgs overlay that sets `nix` to something like `packages.<system>.nix-cli`,
         except dependencies aren't taken from (flake) `nix.inputs.nixpkgs`, but from the Nixpkgs packages
         where the overlay is used.
       */
@@ -292,7 +281,7 @@
           packageSets = packageSetsFor { pkgs = final; };
         in
         {
-          nix = packageSets.nixComponents.nix-everything;
+          nix = packageSets.nixComponents.nix-cli;
         };
 
       hydraJobs = import ./packaging/hydra.nix {
@@ -350,8 +339,8 @@
           default = self.packages.${system}.nix;
           installerScriptForGHA = self.hydraJobs.installerScriptForGHA.${system};
           binaryTarball = self.hydraJobs.binaryTarball.${system};
-          # TODO probably should be `nix-cli`
-          nix = self.packages.${system}.nix-everything;
+          # Changed from `nix-everything`
+          nix = self.packages.${system}.nix-cli;
           nix-manual = nixpkgsFor.${system}.native.nixComponents2.nix-manual;
           nix-manual-manpages-only = nixpkgsFor.${system}.native.nixComponents2.nix-manual-manpages-only;
           nix-internal-api-docs = nixpkgsFor.${system}.native.nixComponents2.nix-internal-api-docs;
