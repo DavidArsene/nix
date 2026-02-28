@@ -60,6 +60,9 @@ void printMissing(ref<Store> store, const std::vector<DerivedPath> & paths, Verb
 
 void printMissing(ref<Store> store, const MissingPaths & missing, Verbosity lvl)
 {
+    // Forcefully show missing paths
+    lvl = lvlWarn;
+
     if (!missing.willBuild.empty()) {
         if (missing.willBuild.size() == 1)
             printMsg(lvl, "this derivation will be built:");
@@ -71,33 +74,43 @@ void printMissing(ref<Store> store, const MissingPaths & missing, Verbosity lvl)
     }
 
     if (!missing.willSubstitute.empty()) {
-        if (missing.willSubstitute.size() == 1) {
+        std::vector<const SubstitutablePath *> willSubstituteSorted = {};
+        std::ranges::for_each(missing.willSubstitute, [&](const auto & p) { willSubstituteSorted.push_back(&p); });
+        std::ranges::sort(
+            willSubstituteSorted, [](const auto * lhs, const auto * rhs) { return lhs->narSize < rhs->narSize; });
+
+        uint64_t totalDownloadSize{0};
+        uint64_t totalNarSize{0};
+
+        for (auto p : willSubstituteSorted) {
+            totalDownloadSize += p->downloadSize;
+            totalNarSize += p->narSize;
+
+            std::string parentsStr;
+            if (p->parents.empty())
+                parentsStr = "()";
+            else {
+                std::vector<std::string> printed;
+                for (auto &pp : p->parents)
+                    printed.push_back(store->printStorePath(pp));
+                parentsStr = fmt(" (for %s)", concatStringsSep(", ", printed));
+            }
+
             printMsg(
                 lvl,
-                "this path will be fetched (%s download, %s unpacked):",
-                renderSize(missing.downloadSize),
-                renderSize(missing.narSize));
-        } else {
-            printMsg(
-                lvl,
-                "these %d paths will be fetched (%s download, %s unpacked):",
-                missing.willSubstitute.size(),
-                renderSize(missing.downloadSize),
-                renderSize(missing.narSize));
+                "%s unpacked, %s download: %s%s",
+                renderSize(p->narSize, true),
+                renderSize(p->downloadSize, true),
+                p->path.to_string(),
+                parentsStr);
         }
-        std::vector<const StorePath *> willSubstituteSorted = {};
-        std::for_each(missing.willSubstitute.begin(), missing.willSubstitute.end(), [&](const StorePath & p) {
-            willSubstituteSorted.push_back(&p);
-        });
-        std::sort(
-            willSubstituteSorted.begin(), willSubstituteSorted.end(), [](const StorePath * lhs, const StorePath * rhs) {
-                if (lhs->name() == rhs->name())
-                    return lhs->to_string() < rhs->to_string();
-                else
-                    return lhs->name() < rhs->name();
-            });
-        for (auto p : willSubstituteSorted)
-            printMsg(lvl, "  %s", store->printStorePath(*p));
+
+        printMsg(
+            lvl,
+            "%d paths to fetch. Download size: %s, unpacked size: %s.",
+            missing.willSubstitute.size(),
+            renderSize(totalDownloadSize, true),
+            renderSize(totalNarSize, true));
     }
 
     if (!missing.unknown.empty()) {

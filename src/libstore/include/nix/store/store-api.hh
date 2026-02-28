@@ -22,6 +22,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <tuple>
 #include <chrono>
 
 namespace nix {
@@ -63,6 +64,26 @@ struct KeyedBuildResult;
 
 typedef std::map<StorePath, std::optional<ContentAddress>> StorePathCAMap;
 
+struct SubstitutablePath
+{
+    StorePath path;
+    uint64_t downloadSize;
+    uint64_t narSize;
+    StorePathSet parents;
+
+    bool operator==(const SubstitutablePath & o) const
+    {
+        return std::tie(path, downloadSize, narSize) == std::tie(o.path, o.downloadSize, o.narSize);
+    }
+
+    auto operator<=>(const SubstitutablePath & o) const noexcept
+    {
+        return std::tie(path, downloadSize, narSize) <=> std::tie(o.path, o.downloadSize, o.narSize);
+    }
+};
+
+typedef std::set<SubstitutablePath> StorePathPlusPlusSet;
+
 /**
  * Information about what paths will be built or substituted, returned
  * by Store::queryMissing().
@@ -70,10 +91,8 @@ typedef std::map<StorePath, std::optional<ContentAddress>> StorePathCAMap;
 struct MissingPaths
 {
     StorePathSet willBuild;
-    StorePathSet willSubstitute;
+    StorePathPlusPlusSet willSubstitute;
     StorePathSet unknown;
-    uint64_t downloadSize{0};
-    uint64_t narSize{0};
 };
 
 /**

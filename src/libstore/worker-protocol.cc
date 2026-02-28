@@ -406,6 +406,24 @@ void WorkerProto::Serialise<UnkeyedValidPathInfo>::write(
         conn.to << (pathInfo.provenance ? pathInfo.provenance->to_json_str() : "");
 }
 
+SubstitutablePath WorkerProto::Serialise<SubstitutablePath>::read(const StoreDirConfig & store, ReadConn conn)
+{
+    return SubstitutablePath{
+        .path = WorkerProto::Serialise<StorePath>::read(store, conn),
+        .downloadSize = readNum<uint64_t>(conn.from),
+        .narSize = readNum<uint64_t>(conn.from),
+        .parents = WorkerProto::Serialise<StorePathSet>::read(store, conn),
+    };
+}
+
+void WorkerProto::Serialise<SubstitutablePath>::write(
+    const StoreDirConfig & store, WriteConn conn, const SubstitutablePath & sp)
+{
+    WorkerProto::write(store, conn, sp.path);
+    conn.to << sp.downloadSize << sp.narSize;
+    WorkerProto::write(store, conn, sp.parents);
+}
+
 WorkerProto::ClientHandshakeInfo
 WorkerProto::Serialise<WorkerProto::ClientHandshakeInfo>::read(const StoreDirConfig & store, ReadConn conn)
 {

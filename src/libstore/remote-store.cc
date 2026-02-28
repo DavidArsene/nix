@@ -866,9 +866,8 @@ MissingPaths RemoteStore::queryMissing(const std::vector<DerivedPath> & targets)
         conn.processStderr();
         MissingPaths res;
         res.willBuild = WorkerProto::Serialise<StorePathSet>::read(*this, *conn);
-        res.willSubstitute = WorkerProto::Serialise<StorePathSet>::read(*this, *conn);
+        res.willSubstitute = WorkerProto::Serialise<StorePathPlusPlusSet>::read(*this, *conn);
         res.unknown = WorkerProto::Serialise<StorePathSet>::read(*this, *conn);
-        conn->from >> res.downloadSize >> res.narSize;
         return res;
     }
 

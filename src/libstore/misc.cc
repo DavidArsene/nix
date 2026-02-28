@@ -355,9 +355,13 @@ MissingPaths Store::queryMissing(const std::vector<DerivedPath> & targets)
 
                     auto info = infos.find(bo.path);
                     assert(info != infos.end());
-                    res.willSubstitute.insert(bo.path);
-                    res.downloadSize += info->second.downloadSize;
-                    res.narSize += info->second.narSize;
+                    res.willSubstitute.insert(
+                        SubstitutablePath{
+                            .path = bo.path,
+                            .downloadSize = info->second.downloadSize,
+                            .narSize = info->second.narSize,
+                            .parents = info->second.references
+                        });
 
                     for (auto & ref : info->second.references)
                         edges.insert(DerivedPath::Opaque{ref});

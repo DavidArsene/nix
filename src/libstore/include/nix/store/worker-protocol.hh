@@ -345,6 +345,8 @@ DECLARE_WORKER_SERIALISER(ValidPathInfo);
 template<>
 DECLARE_WORKER_SERIALISER(UnkeyedValidPathInfo);
 template<>
+DECLARE_WORKER_SERIALISER(SubstitutablePath);
+template<>
 DECLARE_WORKER_SERIALISER(DrvOutput);
 template<>
 DECLARE_WORKER_SERIALISER(UnkeyedRealisation);
