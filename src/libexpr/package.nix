@@ -29,12 +29,12 @@
   #
   # Temporarily disabled on Windows because the `GC_throw_bad_alloc`
   # symbol is missing during linking.
-  enableGC ? !stdenv.hostPlatform.isWindows,
+  enableGC ? false && !stdenv.hostPlatform.isWindows,
 
   # Whether to use wasmtime for wasm integration in the Nix language evaluator
   #
   # Temporarily disabled when static linking due to Rust not compiling
-  enableWasm ? !stdenv.hostPlatform.isStatic,
+  enableWasm ? false && !stdenv.hostPlatform.isStatic,
 }:
 
 let

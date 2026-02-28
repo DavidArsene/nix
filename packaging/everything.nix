@@ -37,7 +37,7 @@
 
   nix-functional-tests,
 
-  nix-manual,
+  nix-manual-manpages-only,
   nix-internal-api-docs,
   nix-external-api-docs,
 
@@ -95,7 +95,7 @@ stdenv.mkDerivation (finalAttrs: {
   outputs = [
     "out"
     "dev"
-    "doc"
+    # "doc"
     "man"
     "debug"
   ];
@@ -178,8 +178,8 @@ stdenv.mkDerivation (finalAttrs: {
       done
 
       # Forwarded outputs
-      ln -sT ${nix-manual} $doc
-      ln -sT ${nix-manual.man} $man
+      # ln -sT ''${nix-manual} $doc
+      ln -sT ${nix-manual-manpages-only} $man
     ''
     + lib.optionalString stdenv.isLinux ''
       lndir ${nix-nswrapper} $out
