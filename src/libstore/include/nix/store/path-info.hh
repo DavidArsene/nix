@@ -36,7 +36,7 @@ PathInfoJsonFormat parsePathInfoJsonFormat(uint64_t version);
 struct SubstitutablePathInfo
 {
     std::optional<StorePath> deriver;
-    StorePathSet references;
+    mutable StorePathSet references;
     /**
      * 0 = unknown or inapplicable
      */
@@ -45,6 +45,11 @@ struct SubstitutablePathInfo
      * 0 = unknown
      */
     uint64_t narSize;
+
+    auto operator<=>(const SubstitutablePathInfo & spi) const
+    {
+        return narSize <=> spi.narSize;
+    }
 };
 
 using SubstitutablePathInfos = std::map<StorePath, SubstitutablePathInfo>;

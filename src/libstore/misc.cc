@@ -222,6 +222,7 @@ MissingPaths Store::queryMissing(const std::vector<DerivedPath> & targets)
     Activity act(*logger, lvlDebug, actUnknown, "querying info about missing paths");
 
     MissingPaths res;
+    std::map<StorePath, StorePathSet> substitutableParents;
 
     auto mustBuildDrv = [&](const StorePath & drvPath, const Derivation & drv, std::set<DerivedPath> & edges) {
         res.willBuild.insert(drvPath);
@@ -335,8 +336,10 @@ MissingPaths Store::queryMissing(const std::vector<DerivedPath> & targets)
                         if (mustBuild)
                             mustBuildDrv(drvPath, *drv, edges);
                         else
-                            for (auto & path : substitutable)
+                            for (auto & path : substitutable) {
                                 edges.insert(DerivedPath::Opaque{path});
+                                substitutableParents[path].insert(drvPath);
+                            }
                     } else {
                         mustBuildDrv(drvPath, *drv, edges);
                     }
@@ -355,12 +358,13 @@ MissingPaths Store::queryMissing(const std::vector<DerivedPath> & targets)
 
                     auto info = infos.find(bo.path);
                     assert(info != infos.end());
-                    res.willSubstitute.insert(bo.path);
-                    res.downloadSize += info->second.downloadSize;
-                    res.narSize += info->second.narSize;
-
-                    for (auto & ref : info->second.references)
+                    res.willSubstitute.insert(
+                        SubstitutablePathInfo{bo.path, StorePathSet(), info->second.downloadSize, info->second.narSize}
+                    );
+                    for (auto & ref : info->second.references) {
                         edges.insert(DerivedPath::Opaque{ref});
+                        substitutableParents[ref].insert(bo.path);
+                    }
                 },
             },
             req.raw());
@@ -371,6 +375,9 @@ MissingPaths Store::queryMissing(const std::vector<DerivedPath> & targets)
     std::set<DerivedPath> startElts(targets.begin(), targets.end());
     std::set<DerivedPath> visited;
     computeClosure(std::move(startElts), visited, std::move(getEdges));
+
+    for (auto & pathInfo : res.willSubstitute)
+        pathInfo.references = std::move(substitutableParents[*pathInfo.deriver]);
 
     return res;
 }

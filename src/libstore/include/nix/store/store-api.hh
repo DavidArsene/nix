@@ -63,6 +63,8 @@ struct KeyedBuildResult;
 
 typedef std::map<StorePath, std::optional<ContentAddress>> StorePathCAMap;
 
+typedef std::set<SubstitutablePathInfo> StorePathPlusPlusSet;
+
 /**
  * Information about what paths will be built or substituted, returned
  * by Store::queryMissing().
@@ -70,10 +72,8 @@ typedef std::map<StorePath, std::optional<ContentAddress>> StorePathCAMap;
 struct MissingPaths
 {
     StorePathSet willBuild;
-    StorePathSet willSubstitute;
+    StorePathPlusPlusSet willSubstitute;
     StorePathSet unknown;
-    uint64_t downloadSize{0};
-    uint64_t narSize{0};
 };
 
 /**
