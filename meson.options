@@ -10,14 +10,14 @@ option(
 option(
   'unit-tests',
   type : 'boolean',
-  value : true,
+  value : false,
   description : 'Build unit tests',
 )
 
 option(
   'bindings',
   type : 'boolean',
-  value : true,
+  value : false,
   description : 'Build language bindings (e.g. Perl)',
 )
 
@@ -31,13 +31,13 @@ option(
 option(
   'kaitai-struct-checks',
   type : 'boolean',
-  value : true,
+  value : false,
   description : 'Check the Kaitai Struct specifications (requires Kaitai Struct)',
 )
 
 option(
   'json-schema-checks',
   type : 'boolean',
-  value : true,
+  value : false,
   description : 'Check JSON schema validity of schemas and examples (requires jv)',
 )
