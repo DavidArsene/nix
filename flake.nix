@@ -1,25 +1,21 @@
 {
   description = "The purely functional package manager";
 
-  inputs.nixpkgs.url = "https://flakehub.com/f/NixOS/nixpkgs/0.2505";
-
-  inputs.nixpkgs-regression.url = "github:NixOS/nixpkgs/215d4d0fd80ca5163643b03a33fde804a29cc1e2";
-  inputs.nixpkgs-23-11.url = "github:NixOS/nixpkgs/a62e6edd6d5e1fa0329b8653c801147986f8d446";
+  inputs.nixpkgs.url = "https://flakehub.com/f/NixOS/nixpkgs/0.2511";
 
   # dev tooling
-  inputs.flake-parts.url = "https://flakehub.com/f/hercules-ci/flake-parts/0.1";
-  inputs.git-hooks-nix.url = "https://flakehub.com/f/cachix/git-hooks.nix/0.1.941";
+  # inputs.flake-parts.url = "https://flakehub.com/f/hercules-ci/flake-parts/0.1";
+  # inputs.git-hooks-nix.url = "https://flakehub.com/f/cachix/git-hooks.nix/0.1.941";
   # work around https://github.com/NixOS/nix/issues/7730
-  inputs.flake-parts.inputs.nixpkgs-lib.follows = "nixpkgs";
-  inputs.git-hooks-nix.inputs.nixpkgs.follows = "nixpkgs";
+  # inputs.flake-parts.inputs.nixpkgs-lib.follows = "nixpkgs";
+  # inputs.git-hooks-nix.inputs.nixpkgs.follows = "nixpkgs";
   # work around 7730 and https://github.com/NixOS/nix/issues/7807
-  inputs.git-hooks-nix.inputs.gitignore.follows = "";
+  # inputs.git-hooks-nix.inputs.gitignore.follows = "";
 
   outputs =
     inputs@{
       self,
       nixpkgs,
-      nixpkgs-regression,
       ...
     }:
 
