@@ -22,7 +22,7 @@
     let
       inherit (nixpkgs) lib;
 
-      officialRelease = false;
+      officialRelease = true;
 
       linux32BitSystems = [ ];
       linux64BitSystems = [

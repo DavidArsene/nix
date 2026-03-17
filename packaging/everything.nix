@@ -143,7 +143,7 @@ stdenv.mkDerivation (finalAttrs: {
       [
         # Perl currently fails in static build
         # TODO: Split out tests into a separate derivation?
-        nix-perl-bindings
+        # nix-perl-bindings
       ];
 
   nativeBuildInputs = [
@@ -169,7 +169,7 @@ stdenv.mkDerivation (finalAttrs: {
       done
 
       # Forwarded outputs
-      ln -sT ${nix-manual} $doc
+      # ln -sT ''${nix-manual} $doc
       ln -sT ${nix-manual.man} $man
     '';
 

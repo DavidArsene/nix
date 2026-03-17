@@ -15,13 +15,14 @@
   sqlite,
   wasmtime,
 
-  busybox-sandbox-shell ? null,
+  busybox,
+  busybox-sandbox-shell ? busybox,
 
   # Configuration Options
 
   version,
 
-  embeddedSandboxShell ? stdenv.hostPlatform.isStatic && !stdenv.hostPlatform.isDarwin,
+  embeddedSandboxShell ? true, # stdenv.hostPlatform.isStatic && !stdenv.hostPlatform.isDarwin,
 
   withAWS ? false,
     # Default is this way because there have been issues building this dependency

@@ -150,7 +150,7 @@ let
     nativeBuildInputs = prevAttrs.nativeBuildInputs or [ ] ++ [
       pkg-config
     ];
-    separateDebugInfo = !stdenv.hostPlatform.isStatic;
+    separateDebugInfo = false; # !stdenv.hostPlatform.isStatic;
     hardeningDisable = lib.optional stdenv.hostPlatform.isStatic "pie";
   };
 
