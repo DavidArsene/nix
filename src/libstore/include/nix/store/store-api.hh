@@ -65,6 +65,7 @@ struct SubstitutablePath
     StorePath path;
     uint64_t downloadSize;
     uint64_t narSize;
+    std::string parent;
 
     bool operator==(const SubstitutablePath &) const = default;
     auto operator<=>(const SubstitutablePath &) const = default;

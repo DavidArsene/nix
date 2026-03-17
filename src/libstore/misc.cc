@@ -125,13 +125,13 @@ MissingPaths Store::queryMissing(const std::vector<DerivedPath> & targets)
 
     Sync<State> state_;
 
-    std::function<void(DerivedPath)> doPath;
+    std::function<void(DerivedPath, std::string)> doPath;
 
     auto enqueueDerivedPaths = [&](this auto self,
                                    ref<SingleDerivedPath> inputDrv,
                                    const DerivedPathMap<StringSet>::ChildNode & inputNode) -> void {
         if (!inputNode.value.empty())
-            pool.enqueue(std::bind(doPath, DerivedPath::Built{inputDrv, inputNode.value}));
+            pool.enqueue(std::bind(doPath, DerivedPath::Built{inputDrv, inputNode.value}, std::string{".drv"}));
         for (const auto & [outputName, childNode] : inputNode.childMap)
             self(make_ref<SingleDerivedPath>(SingleDerivedPath::Built{inputDrv, outputName}), childNode);
     };
@@ -176,13 +176,13 @@ MissingPaths Store::queryMissing(const std::vector<DerivedPath> & targets)
                     drvState->outPaths.insert(outPath);
                     if (!drvState->left) {
                         for (auto & path : drvState->outPaths)
-                            pool.enqueue(std::bind(doPath, DerivedPath::Opaque{path}));
+                            pool.enqueue(std::bind(doPath, DerivedPath::Opaque{path}, std::string{".drv"}));
                     }
                 }
             }
         };
 
-    doPath = [&](const DerivedPath & req) {
+    doPath = [&](const DerivedPath & req, const std::string & parent) {
         {
             auto state(state_.lock());
             if (!state->done.insert(req.to_string(*this)).second)
@@ -292,20 +292,22 @@ MissingPaths Store::queryMissing(const std::vector<DerivedPath> & targets)
                     {
                         auto state(state_.lock());
                         state->res.willSubstitute.insert(
-                            SubstitutablePath{bo.path, info->second.downloadSize, info->second.narSize});
+                            SubstitutablePath{bo.path, info->second.downloadSize, info->second.narSize, parent});
                         state->res.totalDownloadSize += info->second.downloadSize;
                         state->res.totalNarSize += info->second.narSize;
                     }
 
-                    for (auto & ref : info->second.references)
-                        pool.enqueue(std::bind(doPath, DerivedPath::Opaque{ref}));
+                    for (auto & ref : info->second.references) {
+                        auto refParent = std::string{bo.path.isDerivation() ? ".drv" : bo.path.to_string()};
+                        pool.enqueue(std::bind(doPath, DerivedPath::Opaque{ref}, std::move(refParent)));
+                    }
                 },
             },
             req.raw());
     };
 
     for (auto & path : targets)
-        pool.enqueue(std::bind(doPath, path));
+        pool.enqueue(std::bind(doPath, path, std::string{"root"}));
 
     pool.process();
 

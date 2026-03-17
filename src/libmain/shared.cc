@@ -75,18 +75,17 @@ void printMissing(ref<Store> store, const MissingPaths & missing, Verbosity lvl)
             willSubstituteSorted, [](const auto * lhs, const auto * rhs) { return lhs->narSize < rhs->narSize; });
 
         for (auto p : willSubstituteSorted)
-            // longest renderSize is "####.# ?iB" = 10
-            // so for the second one it's 10 + strlen(" disk, ") = 17
             printMsg(
                 lvl,
-                "(%s disk,%17t%10s download) %s",
+                "(%9s disk, %9s download) %s [%s]",
                 renderSize(p->narSize),
                 renderSize(p->downloadSize),
-                p->path.to_string());
+                p->path.to_string(),
+                p->parent);
 
         printMsg(
             lvl,
-            "%d paths will be substituted, downloading %s for a total of %s disk space.",
+            "%d paths will be fetched, downloading %s for a total of %s disk space.",
             missing.willSubstitute.size(),
             renderSize(missing.totalDownloadSize),
             renderSize(missing.totalNarSize));

@@ -107,13 +107,14 @@ CommonProto::Serialise<SubstitutablePath>::read(const StoreDirConfig & store, Co
     return SubstitutablePath{
         .path = store.parseStorePath(readString(conn.from)),
         .downloadSize = readNum<uint64_t>(conn.from),
-        .narSize = readNum<uint64_t>(conn.from)};
+        .narSize = readNum<uint64_t>(conn.from),
+        .parent = readString(conn.from)};
 }
 
 void CommonProto::Serialise<SubstitutablePath>::write(
     const StoreDirConfig & store, CommonProto::WriteConn conn, const SubstitutablePath & gsp)
 {
-    conn.to << store.printStorePath(gsp.path) << gsp.downloadSize << gsp.narSize;
+    conn.to << store.printStorePath(gsp.path) << gsp.downloadSize << gsp.narSize << gsp.parent;
 }
 
 } // namespace nix
