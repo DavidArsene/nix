@@ -35,7 +35,7 @@
 
   nix-functional-tests,
 
-  nix-manual,
+  nix-manual-manpages-only,
   nix-internal-api-docs,
   nix-external-api-docs,
 
@@ -100,7 +100,7 @@ stdenv.mkDerivation (finalAttrs: {
   outputs = [
     "out"
     "dev"
-    "doc"
+    # "doc"
     "man"
   ];
 
@@ -170,7 +170,7 @@ stdenv.mkDerivation (finalAttrs: {
 
       # Forwarded outputs
       # ln -sT ''${nix-manual} $doc
-      ln -sT ${nix-manual.man} $man
+      ln -sT ${nix-manual-manpages-only} $man
     '';
 
   passthru = {

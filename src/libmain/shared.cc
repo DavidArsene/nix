@@ -77,15 +77,15 @@ void printMissing(ref<Store> store, const MissingPaths & missing, Verbosity lvl)
         for (auto p : willSubstituteSorted)
             printMsg(
                 lvl,
-                "(%9s disk, %9s download) %s [%s]",
-                renderSize(p->narSize),
-                renderSize(p->downloadSize),
+                "%s unpacked, %s download: %s %s",
+                renderSize(p->narSize, true),
+                renderSize(p->downloadSize, true),
                 p->path.to_string(),
-                p->parent);
+                p->parent.empty() ? "" : fmt("(for %s)", p->parent));
 
         printMsg(
             lvl,
-            "%d paths will be fetched, downloading %s for a total of %s disk space.",
+            "%d paths to fetch. Download size: %s, unpacked size: %s.",
             missing.willSubstitute.size(),
             renderSize(missing.totalDownloadSize),
             renderSize(missing.totalNarSize));

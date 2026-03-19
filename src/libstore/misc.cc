@@ -131,7 +131,7 @@ MissingPaths Store::queryMissing(const std::vector<DerivedPath> & targets)
                                    ref<SingleDerivedPath> inputDrv,
                                    const DerivedPathMap<StringSet>::ChildNode & inputNode) -> void {
         if (!inputNode.value.empty())
-            pool.enqueue(std::bind(doPath, DerivedPath::Built{inputDrv, inputNode.value}, std::string{".drv"}));
+            pool.enqueue(std::bind(doPath, DerivedPath::Built{inputDrv, inputNode.value}, std::string{"::mustBuildDrv"}));
         for (const auto & [outputName, childNode] : inputNode.childMap)
             self(make_ref<SingleDerivedPath>(SingleDerivedPath::Built{inputDrv, outputName}), childNode);
     };
@@ -176,7 +176,7 @@ MissingPaths Store::queryMissing(const std::vector<DerivedPath> & targets)
                     drvState->outPaths.insert(outPath);
                     if (!drvState->left) {
                         for (auto & path : drvState->outPaths)
-                            pool.enqueue(std::bind(doPath, DerivedPath::Opaque{path}, std::string{".drv"}));
+                            pool.enqueue(std::bind(doPath, DerivedPath::Opaque{path}, std::string{}));
                     }
                 }
             }
@@ -298,7 +298,7 @@ MissingPaths Store::queryMissing(const std::vector<DerivedPath> & targets)
                     }
 
                     for (auto & ref : info->second.references) {
-                        auto refParent = std::string{bo.path.isDerivation() ? ".drv" : bo.path.to_string()};
+                        auto refParent = std::string{bo.path.isDerivation() ? "::references" : bo.path.name()};
                         pool.enqueue(std::bind(doPath, DerivedPath::Opaque{ref}, std::move(refParent)));
                     }
                 },
