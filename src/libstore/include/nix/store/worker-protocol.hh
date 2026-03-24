@@ -7,9 +7,8 @@
 
 namespace nix {
 
-// NOTE: changed to uppercase as a lazy way to prevent communication with upstream `nix-daemon`s
-#define WORKER_MAGIC_1 0x4e495843 // "NIXC"
-#define WORKER_MAGIC_2 0x4458494f // "DXIO"
+#define WORKER_MAGIC_1 0x6e697863 // "nixc"
+#define WORKER_MAGIC_2 0x6478696f // "dxio"
 
 /* Note: you generally shouldn't change the protocol version. Define a
    new `WorkerProto::Feature` instead. */
