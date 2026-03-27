@@ -50,17 +50,17 @@ let
   libs = {
     inherit
       nix-util
-      nix-util-c
+      # nix-util-c
       nix-store
-      nix-store-c
+      # nix-store-c
       nix-fetchers
-      nix-fetchers-c
+      # nix-fetchers-c
       nix-expr
-      nix-expr-c
+      # nix-expr-c
       nix-flake
-      nix-flake-c
+      # nix-flake-c
       nix-main
-      nix-main-c
+      # nix-main-c
       nix-cmd
       ;
   }
@@ -229,17 +229,17 @@ stdenv.mkDerivation (finalAttrs: {
     pkgConfigModules = [
       "nix-cmd"
       "nix-expr"
-      "nix-expr-c"
+      # "nix-expr-c"
       "nix-fetchers"
-      "nix-fetchers-c"
+      # "nix-fetchers-c"
       "nix-flake"
-      "nix-flake-c"
+      # "nix-flake-c"
       "nix-main"
-      "nix-main-c"
+      # "nix-main-c"
       "nix-store"
-      "nix-store-c"
+      # "nix-store-c"
       "nix-util"
-      "nix-util-c"
+      # "nix-util-c"
     ];
   };
 
