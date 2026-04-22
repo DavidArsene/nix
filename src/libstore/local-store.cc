@@ -1063,18 +1063,6 @@ void LocalStore::addToStore(const ValidPathInfo & info, Source & source, RepairF
         throw Error("cannot add path '%s' because it lacks a signature by a trusted key", printStorePath(info.path));
 
     {
-        /* In case we are not interested in reading the NAR: discard it. */
-        bool narRead = false;
-        Finally cleanup = [&]() {
-            if (!narRead)
-                try {
-                    source.skip(info.narSize);
-                } catch (...) {
-                    // TODO: should Interrupted be handled here?
-                    ignoreExceptionInDestructor();
-                }
-        };
-
         addTempRoot(info.path);
 
         if (repair || !isValidPath(info.path)) {
@@ -1099,7 +1087,6 @@ void LocalStore::addToStore(const ValidPathInfo & info, Source & source, RepairF
 
                 TeeSource wrapperSource{source, hashSink};
 
-                narRead = true;
                 restorePath(realPath, wrapperSource, settings.fsyncStorePaths);
 
                 auto hashResult = hashSink.finish();
@@ -1108,8 +1095,8 @@ void LocalStore::addToStore(const ValidPathInfo & info, Source & source, RepairF
                     throw Error(
                         "hash mismatch importing path '%s';\n  specified: %s\n  got:       %s",
                         printStorePath(info.path),
-                        info.narHash.to_string(HashFormat::Nix32, true),
-                        hashResult.hash.to_string(HashFormat::Nix32, true));
+                        info.narHash.to_string(HashFormat::SRI, true),
+                        hashResult.hash.to_string(HashFormat::SRI, true));
 
                 if (hashResult.numBytesDigested != info.narSize)
                     throw Error(
@@ -1348,8 +1335,9 @@ std::pair<std::filesystem::path, AutoCloseFD> LocalStore::createTempDirInStore()
     do {
         /* There is a slight possibility that `tmpDir' gets deleted by
            the GC between createTempDir() and when we acquire a lock on it.
-           We'll repeat until 'tmpDir' exists and we've locked it. */
-        tmpDirFn = createTempDir(std::filesystem::path{config->realStoreDir.get()}, "tmp");
+           We'll repeat until 'tmpDir' exists and we've locked it.
+           Make the directory accessible only to the current user. */
+        tmpDirFn = createTempDir(std::filesystem::path{config->realStoreDir.get()}, "tmp", /*mode=*/0700);
         tmpDirFd = openDirectory(tmpDirFn);
         if (!tmpDirFd) {
             continue;

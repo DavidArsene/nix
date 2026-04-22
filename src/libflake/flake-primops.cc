@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "nix/flake/flake-primops.hh"
+#include "nix/store/store-api.hh"
 #include "nix/expr/eval.hh"
 #include "nix/flake/flake.hh"
 #include "nix/flake/flakeref.hh"
@@ -29,6 +30,7 @@
 #include "nix/util/source-path.hh"
 #include "nix/util/types.hh"
 #include "nix/util/util.hh"
+#include "nix/util/mounted-source-accessor.hh"
 
 namespace nix::flake::primops {
 
@@ -65,6 +67,22 @@ PrimOp getFlake(const Settings & settings)
                     "cannot call 'getFlake' on unlocked flake reference '%s', at %s (use --impure to override)",
                     flakeRefS,
                     state.positions[pos]);
+
+            /* Backward compatibility hack: If this is a `path` flake and it's a virtual path that had
+             * `unsafeDiscardStringContext` applied to it, then treat it like the `nPath` case, i.e. call lockFlake() on
+             * the virtual path directly. This is necessary because the `path` fetcher doesn't see virtual paths. */
+            if (flakeRef.input.getType() == "path") {
+                if (auto sourcePath = flakeRef.input.getSourcePath();
+                    sourcePath && state.store->isInStore(sourcePath->string())) {
+                    auto [storePath, subPath] = state.store->toStorePath(sourcePath->string());
+                    if (auto mount = state.storeFS->getMount(CanonPath(state.store->printStorePath(storePath)))) {
+                        auto path = state.storePath(storePath) / CanonPath(subPath);
+                        if (!flakeRef.subdir.empty())
+                            path = path / flakeRef.subdir;
+                        return callFlake(state, lockFlake(settings, state, path, lockFlags), v);
+                    }
+                }
+            }
 
             callFlake(state, lockFlake(settings, state, flakeRef, lockFlags), v);
         }

@@ -22,6 +22,7 @@
 #include "nix/util/terminal.hh"
 #include "nix/store/provenance.hh"
 
+#include <nlohmann/json.hpp>
 #include <queue>
 
 #include <sys/un.h>
@@ -932,8 +933,27 @@ PathsInChroot DerivationBuilderImpl::getPathsInSandbox()
 
         enum BuildHookState { stBegin, stExtraChrootDirs };
 
+        nlohmann::json drvJson = drv;
+
+        auto [tmpFd, drvJsonPath] = createTempFile("nix-drv-json");
+        writeFile(drvJsonPath, drvJson.dump());
+        AutoDelete drvJsonFile(drvJsonPath, false);
+
+        auto hookEnv = getEnv();
+        static_assert(expectedJsonVersionDerivation == 4);
+        hookEnv["NIX_DERIVATION_V4"] = drvJsonPath;
+
+        auto [hookStatus, lines] = runProgram(
+            RunOptions{
+                .program = settings.preBuildHook,
+                .lookupPath = false,
+                .args = getPreBuildHookArgs(),
+                .environment = std::move(hookEnv),
+            });
+        if (!statusOk(hookStatus))
+            throw ExecError(hookStatus, "pre-build hook '%1%' %2%", settings.preBuildHook, statusToString(hookStatus));
+
         auto state = stBegin;
-        auto lines = runProgram(settings.preBuildHook, false, getPreBuildHookArgs());
         auto lastPos = std::string::size_type{0};
         for (auto nlPos = lines.find('\n'); nlPos != std::string::npos; nlPos = lines.find('\n', lastPos)) {
             auto line = lines.substr(lastPos, nlPos - lastPos);
@@ -1579,6 +1599,13 @@ SingleDrvOutputs DerivationBuilderImpl::registerOutputs()
         assert(output && scratchPath);
         auto actualPath = realPathInHost(store.printStorePath(*scratchPath));
 
+        /* An optional file descriptor of a directory used for intermediate
+           operations. */
+        AutoCloseFD tempDirFd;
+        /* RAII cleanup of a temporary directory inside the store that is used
+           for intermediate operations. */
+        std::optional<AutoDelete> delTempDir;
+
         auto finish = [&](StorePath finalStorePath) {
             /* Store the final path */
             finalOutputs.insert_or_assign(outputName, finalStorePath);
@@ -1714,6 +1741,25 @@ SingleDrvOutputs DerivationBuilderImpl::registerOutputs()
             return newInfo0;
         };
 
+        auto moveOutputToTempDir = [&]() -> void {
+            std::filesystem::path tempDir;
+            std::tie(tempDir, tempDirFd) = store.createTempDirInStore();
+            delTempDir.emplace(tempDir);
+
+            auto tmpOutput = tempDir / "x";
+
+            /* Serialise and create a fresh copy of the output to break
+               any stale writable file descriptors. Copy through the
+               serialisation/deserialisation. TODO: Use copyRecursive here and
+               make use of reflinking. */
+            auto source = sinkToSource([&](Sink & nextSink) { dumpPath(actualPath, nextSink); });
+            restorePath(tmpOutput, *source, settings.fsyncStorePaths);
+            /* This makes it slightly harder to make sense of the control flow. The rule
+               of thumb is that actualPath points to the current location of the stuff
+               that we'll end up registering. */
+            actualPath = std::move(tmpOutput);
+        };
+
         ValidPathInfo newInfo = std::visit(
             overloaded{
 
@@ -1741,14 +1787,7 @@ SingleDrvOutputs DerivationBuilderImpl::registerOutputs()
 
                 [&](const DerivationOutput::CAFixed & dof) {
                     auto & wanted = dof.ca.hash;
-
-                    // Replace the output by a fresh copy of itself to make sure
-                    // that there's no stale file descriptor pointing to it
-                    Path tmpOutput = actualPath + ".tmp";
-                    copyFile(std::filesystem::path(actualPath), std::filesystem::path(tmpOutput), true);
-
-                    std::filesystem::rename(tmpOutput, actualPath);
-
+                    moveOutputToTempDir();
                     return newInfoFromCA(
                         DerivationOutput::CAFloating{
                             .method = dof.ca.method,
@@ -1765,6 +1804,7 @@ SingleDrvOutputs DerivationBuilderImpl::registerOutputs()
                 },
 
                 [&](const DerivationOutput::Impure & doi) {
+                    moveOutputToTempDir();
                     return newInfoFromCA(
                         DerivationOutput::CAFloating{
                             .method = doi.method,
