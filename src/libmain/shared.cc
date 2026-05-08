@@ -33,7 +33,6 @@
 #include "nix/util/strings.hh"
 
 #include "main-config-private.hh"
-#include "nix/expr/config.hh"
 
 namespace nix {
 
