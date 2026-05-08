@@ -34,10 +34,6 @@ mkMesonLibrary (finalAttrs: {
   ];
 
   propagatedBuildInputs = [
-    # FIXME: This is only here for the NIX_USE_BOEHMGC macro dependency
-    #        Removing nix-expr will make the build more concurrent and is
-    #        architecturally nice, perhaps.
-    nix-expr
     nix-util
     nix-store
     openssl
