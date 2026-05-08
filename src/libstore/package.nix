@@ -24,13 +24,11 @@
 
   version,
 
-  embeddedSandboxShell ? true, # stdenv.hostPlatform.isStatic && !stdenv.hostPlatform.isDarwin,
+  embeddedSandboxShell ? true,
 
   withAWS ? false,
-    # Default is this way because there have been issues building this dependency
-    # (lib.meta.availableOn stdenv.hostPlatform aws-c-common) && !stdenv.hostPlatform.isStatic,
 
-  enableWasm ? false, # !stdenv.hostPlatform.isStatic,
+  enableWasm ? false,
 }:
 
 let

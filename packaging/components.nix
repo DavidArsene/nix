@@ -150,7 +150,7 @@ let
     nativeBuildInputs = prevAttrs.nativeBuildInputs or [ ] ++ [
       pkg-config
     ];
-    separateDebugInfo = false; # !stdenv.hostPlatform.isStatic;
+    separateDebugInfo = false;
     # needed by separateDebugInfo
     # SEE: https://github.com/NixOS/nixpkgs/pull/394674/commits/a4d355342976e9e9823fb94f133bc43ebec9da5b
     __structuredAttrs = separateDebugInfo;

@@ -37,7 +37,7 @@
 
   nix-functional-tests,
 
-  nix-manual-manpages-only,
+  nix-manual,
   nix-internal-api-docs,
   nix-external-api-docs,
 
@@ -56,17 +56,17 @@ let
   libs = {
     inherit
       nix-util
-      # nix-util-c
+      nix-util-c
       nix-store
-      # nix-store-c
+      nix-store-c
       nix-fetchers
-      # nix-fetchers-c
+      nix-fetchers-c
       nix-expr
-      # nix-expr-c
+      nix-expr-c
       nix-flake
-      # nix-flake-c
+      nix-flake-c
       nix-main
-      # nix-main-c
+      nix-main-c
       nix-cmd
       ;
   }
@@ -106,7 +106,7 @@ stdenv.mkDerivation (finalAttrs: {
   outputs = [
     "out"
     "dev"
-    # "doc"
+    "doc"
     "man"
     "debug"
   ];
@@ -125,7 +125,7 @@ stdenv.mkDerivation (finalAttrs: {
     This includes both the unit tests and the functional tests, but not the
     integration tests that run in CI (the flake's `hydraJobs` and some of the `checks`).
   */
-  doCheck = false;
+  doCheck = true;
 
   /**
     `fixupPhase` currently doesn't understand that a symlink output isn't writable.
@@ -136,21 +136,21 @@ stdenv.mkDerivation (finalAttrs: {
 
   checkInputs = [
     # Make sure the unit tests have passed
-    # nix-util-tests.tests.run
-    # nix-store-tests.tests.run
-    # nix-expr-tests.tests.run
-    # nix-fetchers-tests.tests.run
-    # nix-flake-tests.tests.run
+    nix-util-tests.tests.run
+    nix-store-tests.tests.run
+    nix-expr-tests.tests.run
+    nix-fetchers-tests.tests.run
+    nix-flake-tests.tests.run
 
     # Make sure the functional tests have passed
-    # nix-functional-tests
+    nix-functional-tests
   ]
   ++
     lib.optionals (!stdenv.hostPlatform.isStatic && stdenv.buildPlatform.canExecute stdenv.hostPlatform)
       [
         # Perl currently fails in static build
         # TODO: Split out tests into a separate derivation?
-        # nix-perl-bindings
+        nix-perl-bindings
       ];
 
   nativeBuildInputs = [
@@ -191,8 +191,8 @@ stdenv.mkDerivation (finalAttrs: {
       done
 
       # Forwarded outputs
-      # ln -sT ''${nix-manual} $doc
-      ln -sT ${nix-manual-manpages-only} $man
+      ln -sT ${nix-manual} $doc
+      ln -sT ${nix-manual.man} $man
     ''
     + lib.optionalString stdenv.isLinux ''
       lndir ${nix-nswrapper} $out
@@ -254,17 +254,17 @@ stdenv.mkDerivation (finalAttrs: {
     pkgConfigModules = [
       "nix-cmd"
       "nix-expr"
-      # "nix-expr-c"
+      "nix-expr-c"
       "nix-fetchers"
-      # "nix-fetchers-c"
+      "nix-fetchers-c"
       "nix-flake"
-      # "nix-flake-c"
+      "nix-flake-c"
       "nix-main"
-      # "nix-main-c"
+      "nix-main-c"
       "nix-store"
-      # "nix-store-c"
+      "nix-store-c"
       "nix-util"
-      # "nix-util-c"
+      "nix-util-c"
     ];
   };
 

@@ -26,10 +26,10 @@
   # sounds so long as evaluation just takes places within short-lived
   # processes. (When the process exits, the memory is reclaimed; it is
   # only leaked *within* the process.)
-  enableGC ? false, # !stdenv.hostPlatform.isWindows,
+  enableGC ? false,
 
   # Whether to use wasmtime for wasm integration in the Nix language evaluator
-  enableWasm ? false, # !stdenv.hostPlatform.isStatic,
+  enableWasm ? false,
 }:
 
 let
