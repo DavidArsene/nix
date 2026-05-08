@@ -126,7 +126,7 @@ MissingPaths Store::queryMissing(const std::vector<DerivedPath> & targets)
 
     Sync<State> state_;
 
-    fun<void(DerivedPath, std::string)> doPath = [&](const DerivedPath &) { unreachable(); };
+    fun<void(DerivedPath, std::string)> doPath = [&](const DerivedPath &, const std::string &) { unreachable(); };
 
     auto enqueueDerivedPaths = [&](this auto self,
                                    ref<SingleDerivedPath> inputDrv,
