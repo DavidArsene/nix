@@ -331,6 +331,7 @@ void printVersion(const std::string & programName)
     std::cout << fmt("%s %s", programName, version()) << std::endl;
     if (verbosity > lvlInfo) {
         Strings cfg;
+#define NIX_USE_BOEHMGC 0
 #if NIX_USE_BOEHMGC
         cfg.push_back("gc");
 #endif
