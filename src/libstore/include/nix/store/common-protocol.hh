@@ -37,6 +37,7 @@ struct CommonProto
     {
         Source & from;
         bool shortStorePaths = false;
+        bool includeSubstitutablePathParent = false;
     };
 
     /**
@@ -47,6 +48,7 @@ struct CommonProto
     {
         Sink & to;
         bool shortStorePaths = false;
+        bool includeSubstitutablePathParent = false;
     };
 
     template<typename T>
