@@ -46,13 +46,26 @@ struct WorkerProto::Serialise
     static T read(const StoreDirConfig & store, WorkerProto::ReadConn conn)
     {
         return CommonProto::Serialise<T>::read(
-            store, CommonProto::ReadConn{.from = conn.from, .shortStorePaths = conn.shortStorePaths});
+            store,
+            CommonProto::ReadConn{
+                .from = conn.from,
+                .shortStorePaths = conn.shortStorePaths,
+                .includeSubstitutablePathParent =
+                    conn.version.features.contains(WorkerProto::featureSubstitutablePathParent),
+            });
     }
 
     static void write(const StoreDirConfig & store, WorkerProto::WriteConn conn, const T & t)
     {
         CommonProto::Serialise<T>::write(
-            store, CommonProto::WriteConn{.to = conn.to, .shortStorePaths = conn.shortStorePaths}, t);
+            store,
+            CommonProto::WriteConn{
+                .to = conn.to,
+                .shortStorePaths = conn.shortStorePaths,
+                .includeSubstitutablePathParent =
+                    conn.version.features.contains(WorkerProto::featureSubstitutablePathParent),
+            },
+            t);
     }
 };
 

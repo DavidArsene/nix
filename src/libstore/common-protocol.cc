@@ -172,17 +172,23 @@ void CommonProto::Serialise<BuildResultStatus>::write(
 SubstitutablePath
 CommonProto::Serialise<SubstitutablePath>::read(const StoreDirConfig & store, CommonProto::ReadConn conn)
 {
+    auto path = store.parseStorePath(readString(conn.from));
+    auto downloadSize = readNum<uint64_t>(conn.from);
+    auto narSize = readNum<uint64_t>(conn.from);
+    auto parent = conn.includeSubstitutablePathParent ? readString(conn.from) : "";
     return SubstitutablePath{
-        .path = store.parseStorePath(readString(conn.from)),
-        .downloadSize = readNum<uint64_t>(conn.from),
-        .narSize = readNum<uint64_t>(conn.from),
-        .parent = readString(conn.from)};
+        .path = std::move(path),
+        .downloadSize = downloadSize,
+        .narSize = narSize,
+        .parent = std::move(parent)};
 }
 
 void CommonProto::Serialise<SubstitutablePath>::write(
     const StoreDirConfig & store, CommonProto::WriteConn conn, const SubstitutablePath & gsp)
 {
-    conn.to << store.printStorePath(gsp.path) << gsp.downloadSize << gsp.narSize << gsp.parent;
+    conn.to << store.printStorePath(gsp.path) << gsp.downloadSize << gsp.narSize;
+    if (conn.includeSubstitutablePathParent)
+        conn.to << gsp.parent;
 }
 
 } // namespace nix
