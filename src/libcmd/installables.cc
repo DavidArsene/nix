@@ -616,8 +616,11 @@ std::vector<InstallableWithBuildResult> Installable::build2(
         break;
 
     case Realise::Outputs: {
-        if (settings.printMissing)
-            printMissing(store, pathsToBuild, lvlInfo);
+        auto missing = store->queryMissing(pathsToBuild);
+        printMissing(store, missing, lvlInfo);
+        if ((!missing.willBuild.empty() || !missing.willSubstitute.empty() || !missing.unknown.empty())
+            && !confirmYesNo("Continue building these paths? [Y/n]", 'y'))
+            throw Exit(1);
 
         auto buildResults = store->buildPathsWithResults(pathsToBuild, bMode, evalStore);
         for (auto & buildResult : buildResults) {

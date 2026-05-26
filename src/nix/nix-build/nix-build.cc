@@ -446,8 +446,11 @@ static void main_nix_build(int argc, char ** argv)
     state->maybePrintStats();
 
     auto buildPaths = [&](const std::vector<DerivedPath> & paths) {
-        if (settings.printMissing)
-            printMissing(ref<Store>(store), paths);
+        auto missing = store->queryMissing(paths);
+        printMissing(ref<Store>(store), missing);
+        if ((!missing.willBuild.empty() || !missing.willSubstitute.empty() || !missing.unknown.empty())
+            && !confirmYesNo("Continue building these paths? [Y/n]", 'y'))
+            throw Exit(1);
 
         if (!dryRun)
             store->buildPaths(paths, buildMode, evalStore);

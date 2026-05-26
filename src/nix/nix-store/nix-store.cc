@@ -168,8 +168,11 @@ static void opRealise(Strings opFlags, Strings opArgs)
         missing.unknown = StorePathSet();
     }
 
-    if (settings.printMissing)
-        printMissing(ref<Store>(store), missing);
+    printMissing(ref<Store>(store), missing);
+    if ((!missing.willBuild.empty() || !missing.willSubstitute.empty() || !missing.unknown.empty())
+        && !dryRun
+        && !confirmYesNo("Continue building these paths? [Y/n]", 'y'))
+        throw Exit(1);
 
     if (dryRun)
         return;

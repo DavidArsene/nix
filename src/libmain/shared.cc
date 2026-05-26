@@ -11,6 +11,7 @@
 #include "nix/util/util.hh"
 
 #include <algorithm>
+#include <cctype>
 #include <exception>
 #include <iostream>
 
@@ -103,6 +104,20 @@ void printMissing(ref<Store> store, const MissingPaths & missing, Verbosity lvl)
         for (auto & i : missing.unknown)
             printMsg(lvl, "  %s", store->printStorePath(i));
     }
+}
+
+bool confirmYesNo(std::string_view message, char defaultAnswer)
+{
+    auto answer = logger->ask(message);
+
+    if (!answer && isatty(STDIN_FILENO)) {
+        std::cerr << fmt("%s ", message);
+        auto input = trim(readLine(getStandardInput(), true));
+        if (input.size() == 1)
+            answer = input[0];
+    }
+
+    return std::tolower(static_cast<unsigned char>(answer.value_or(defaultAnswer))) == 'y';
 }
 
 std::string getArg(const std::string & opt, Strings::iterator & i, const Strings::iterator & end)

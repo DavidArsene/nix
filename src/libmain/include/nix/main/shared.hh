@@ -10,6 +10,7 @@
 #include "nix/store/derived-path.hh"
 
 #include <signal.h>
+#include <string_view>
 
 namespace nix {
 
@@ -41,6 +42,8 @@ struct MissingPaths;
 void printMissing(ref<Store> store, const std::vector<DerivedPath> & paths, Verbosity lvl = lvlInfo);
 
 void printMissing(ref<Store> store, const MissingPaths & missing, Verbosity lvl = lvlInfo);
+
+bool confirmYesNo(std::string_view message, char defaultAnswer = 'y');
 
 std::string getArg(const std::string & opt, Strings::iterator & i, const Strings::iterator & end);
 
