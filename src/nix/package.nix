@@ -48,7 +48,7 @@ let
 in
 
 mkMesonExecutable (finalAttrs: {
-  pname = "determinate-nix";
+  pname = "nix";
   inherit version;
 
   workDir = ./.;
